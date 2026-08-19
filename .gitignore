@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Genomic data
+*.bigWig
+*.bw
+*.fa
+*.fasta
+*.fna
+*.fastq
+*.bed
+*.bedgraph
+
+# Generated numerical data
+*.npy
+*.npz
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+
+# Generated outputs
+outputs/
+results/
+checkpoints/
+logs/
+figures/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

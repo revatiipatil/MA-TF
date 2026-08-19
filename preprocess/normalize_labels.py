@@ -1,42 +1,19 @@
-#!/usr/bin/env python3
-"""
-Standardize accessibility labels (mean/std) for training stability.
-"""
-
-import argparse
-import json
-from pathlib import Path
-
 import numpy as np
 
+labels = np.load("k562_labels_raw.npy")
 
-def main(args: argparse.Namespace):
-    labels_path = Path(args.labels)
-    output_path = Path(args.output) if args.output else labels_path.with_name("accessibility_scores.norm.npy")
-    stats_path = Path(args.stats) if args.stats else labels_path.with_name("accessibility_scores.norm.stats.json")
+# Clip extreme outliers (top 1%)
+p99 = np.percentile(labels, 99)
+labels = np.clip(labels, 0, p99)
 
-    labels = np.load(labels_path)
-    mean = float(labels.mean())
-    std = float(labels.std())
-    if std < args.eps:
-        raise ValueError(f"Standard deviation too small ({std}); cannot normalize.")
+# Min-max normalize
+labels_norm = (labels - labels.min()) / (labels.max() - labels.min() + 1e-8)
 
-    normalized = (labels - mean) / std
-    np.save(output_path, normalized.astype(np.float32))
+np.save("k562_labels_norm.npy", labels_norm)
 
-    stats = {"mean": mean, "std": std}
-    with stats_path.open("w") as f:
-        json.dump(stats, f, indent=2)
-
-    print(f"[OK] Saved normalized labels -> {output_path}")
-    print(f"[OK] Stats: mean={mean:.6f}, std={std:.6f}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Normalize accessibility labels.")
-    parser.add_argument("--labels", default="data/processed/labels/accessibility_scores.npy", help="Path to label numpy file.")
-    parser.add_argument("--output", help="Output path for normalized labels.")
-    parser.add_argument("--stats", help="Where to save normalization stats JSON.")
-    parser.add_argument("--eps", type=float, default=1e-6, help="Minimum std to avoid divide-by-zero.")
-    main(parser.parse_args())
-
+print("After normalization:")
+print("  min:", labels_norm.min())
+print("  max:", labels_norm.max())
+print("  mean:", labels_norm.mean())
+print("  std:", labels_norm.std())
+print("Wrote: k562_labels_norm.npy")
